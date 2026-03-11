@@ -12,13 +12,12 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T | ((val
         setStoredValue(JSON.parse(item));
       } else {
         window.localStorage.setItem(key, JSON.stringify(initialValue));
-        setStoredValue(initialValue);
       }
     } catch (error) {
       console.error(error);
-      setStoredValue(initialValue);
     }
-  }, [key, initialValue]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
 
   const setValue = useCallback((value: T | ((val: T) => T)) => {
     try {
