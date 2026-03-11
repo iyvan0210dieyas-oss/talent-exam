@@ -31,7 +31,7 @@ export default function WelcomePage({ onStudentLogin, onAdminLogin }: WelcomePag
             alt={welcomeImage.description}
             width={500}
             height={300}
-            className="rounded-lg object-cover shadow-lg"
+            className="rounded-lg object-contain shadow-lg"
             data-ai-hint={welcomeImage.imageHint}
             priority
           />

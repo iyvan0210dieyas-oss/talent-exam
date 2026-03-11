@@ -2,9 +2,9 @@
   "placeholderImages": [
     {
       "id": "welcome-image",
-      "description": "Abstract image for welcome page, showing puzzle pieces",
-      "imageUrl": "https://picsum.photos/seed/puzzle1/500/300",
-      "imageHint": "abstract puzzle"
+      "description": "Talent Tango Puzzle Master logo",
+      "imageUrl": "https://res.cloudinary.com/dry3pzan6/image/upload/v1773224789/weg9sph1nqpouhoqktjx.png",
+      "imageHint": "logo"
     }
   ]
 }
