@@ -21,22 +21,23 @@ export default function InstructionsDialog({ isOpen, onConfirm }: InstructionsDi
   const [countdown, setCountdown] = useState(5);
 
   useEffect(() => {
-    if (isOpen) {
-      setCountdown(5);
-      const timer = setInterval(() => {
-        setCountdown(prev => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            setTimeout(onConfirm, 0);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-
-      return () => clearInterval(timer);
+    if (!isOpen) {
+      setCountdown(5); // Reset countdown when dialog is closed or not open initially
+      return;
     }
-  }, [isOpen, onConfirm]);
+
+    if (countdown === 0) {
+      onConfirm();
+      return;
+    }
+
+    // Use setTimeout for a more robust countdown
+    const timerId = setTimeout(() => {
+      setCountdown(countdown - 1);
+    }, 1000);
+
+    return () => clearTimeout(timerId); // Cleanup the timeout
+  }, [isOpen, countdown, onConfirm]);
 
   return (
     <Dialog open={isOpen}>
