@@ -27,7 +27,7 @@ export default function InstructionsDialog({ isOpen, onConfirm }: InstructionsDi
         setCountdown(prev => {
           if (prev <= 1) {
             clearInterval(timer);
-            onConfirm();
+            setTimeout(onConfirm, 0);
             return 0;
           }
           return prev - 1;
