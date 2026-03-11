@@ -16,6 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 type QuizViewProps = {
   user: User;
   onSubmit: (submission: Omit<Submission, 'id' | 'timestamp' | 'attempt'>) => void;
+  isSubmitting?: boolean;
 };
 
 const shuffleArray = <T,>(array: T[]): T[] => {
@@ -27,11 +28,14 @@ const shuffleArray = <T,>(array: T[]): T[] => {
   return newArray;
 };
 
-export default function QuizView({ user, onSubmit }: QuizViewProps) {
+export default function QuizView({ user, onSubmit, isSubmitting = false }: QuizViewProps) {
   const { toast } = useToast();
-  const form = useForm();
-  
+
   const shuffledQuestions = useMemo(() => shuffleArray(quizQuestions), []);
+
+  const form = useForm({
+    defaultValues: Object.fromEntries(shuffledQuestions.map((q) => [q.id, ''])),
+  });
 
   const handleSubmit = form.handleSubmit((data) => {
     let score = 0;
@@ -119,7 +123,7 @@ export default function QuizView({ user, onSubmit }: QuizViewProps) {
                       control={form.control}
                       name={q.id}
                       render={({ field }) => (
-                        <FormItem as="fieldset">
+                        <FormItem>
                           <FormControl>
                             <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="space-y-2">
                               {q.options?.map((option) => (
@@ -151,7 +155,9 @@ export default function QuizView({ user, onSubmit }: QuizViewProps) {
                 </div>
               </div>
             ))}
-            <Button type="submit" size="lg" className="w-full text-lg">Submit Answers</Button>
+            <Button type="submit" size="lg" className="w-full text-lg" disabled={isSubmitting}>
+              {isSubmitting ? 'Saving…' : 'Submit Answers'}
+            </Button>
           </form>
         </Form>
       </CardContent>

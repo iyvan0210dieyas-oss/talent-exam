@@ -11,8 +11,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Trash2, ShieldX, LogOut } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Trash2, ShieldX, RefreshCw } from 'lucide-react';
 import AdminResponseDialog from './admin-response-dialog';
 import {
   AlertDialog,
@@ -28,92 +28,99 @@ import {
 
 type AdminDashboardProps = {
   submissions: Submission[];
-  setSubmissions: (submissions: Submission[]) => void;
+  onClearSubmissions: () => Promise<void>;
 };
 
-export default function AdminDashboard({ submissions, setSubmissions }: AdminDashboardProps) {
+export default function AdminDashboard({ submissions, onClearSubmissions }: AdminDashboardProps) {
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
+  const [isClearing, setIsClearing] = useState(false);
 
-  const handleClearResults = () => {
-    setSubmissions([]);
-    localStorage.removeItem('submissions');
-  };
-
-  const handleClearAll = () => {
-    localStorage.clear();
-    window.location.reload();
+  const handleClearResults = async () => {
+    setIsClearing(true);
+    try {
+      await onClearSubmissions();
+    } finally {
+      setIsClearing(false);
+    }
   };
 
   return (
     <Card className="w-full max-w-5xl animate-slide-in-up">
       <CardHeader>
-        <CardTitle>📊 Admin Dashboard - Student Results</CardTitle>
+        <div className="flex items-start justify-between">
+          <div>
+            <CardTitle>📊 Admin Dashboard — Student Results</CardTitle>
+            <CardDescription className="mt-1">
+              {submissions.length === 0
+                ? 'No submissions yet. Results will appear here in real-time as students complete the exam.'
+                : `${submissions.length} submission${submissions.length !== 1 ? 's' : ''} — updates automatically as new students submit.`}
+            </CardDescription>
+          </div>
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <RefreshCw className="h-3 w-3 animate-spin-slow" />
+            <span>Live</span>
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="flex flex-wrap gap-2 mb-4">
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="destructive"><Trash2 />Clear Results</Button>
+              <Button variant="destructive" disabled={isClearing || submissions.length === 0}>
+                <Trash2 className="mr-1 h-4 w-4" />
+                {isClearing ? 'Clearing…' : 'Clear All Results'}
+              </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This will permanently delete all student quiz results. This action cannot be undone.
+                  This will permanently delete all {submissions.length} student quiz result{submissions.length !== 1 ? 's' : ''} from the database. This action cannot be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleClearResults}>Confirm</AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="destructive" className="bg-purple-600 hover:bg-purple-700"><ShieldX />Clear All Data</Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>DANGER: Are you absolutely sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This will clear EVERYTHING from local storage, including results and attempts count. This is irreversible.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleClearAll}>Yes, delete all data</AlertDialogAction>
+                <AlertDialogAction onClick={handleClearResults}>Yes, clear all</AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
         </div>
-        
+
         <div className="border rounded-lg">
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>#</TableHead>
                 <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
                 <TableHead>Course</TableHead>
                 <TableHead>Attempt</TableHead>
                 <TableHead>Score</TableHead>
-                <TableHead>Date</TableHead>
+                <TableHead>Submitted At</TableHead>
                 <TableHead>Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {submissions.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground h-24">
-                    No results yet.
+                  <TableCell colSpan={8} className="text-center text-muted-foreground h-24">
+                    No results yet. Waiting for student submissions…
                   </TableCell>
                 </TableRow>
               ) : (
-                submissions.map((sub) => (
+                submissions.map((sub, idx) => (
                   <TableRow key={sub.id}>
+                    <TableCell className="text-muted-foreground">{idx + 1}</TableCell>
                     <TableCell className="font-medium">{sub.user.name}</TableCell>
+                    <TableCell className="text-muted-foreground text-sm">{sub.user.email}</TableCell>
                     <TableCell>{sub.user.course}</TableCell>
                     <TableCell>{sub.attempt}</TableCell>
-                    <TableCell>{sub.finalScore}/{sub.totalQuestions}</TableCell>
-                    <TableCell>{sub.timestamp}</TableCell>
+                    <TableCell>
+                      <span className={sub.finalScore / sub.totalQuestions >= 0.5 ? 'text-green-600 font-semibold' : 'text-red-500 font-semibold'}>
+                        {sub.finalScore}/{sub.totalQuestions}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{sub.timestamp}</TableCell>
                     <TableCell>
                       <Button variant="outline" size="sm" onClick={() => setSelectedSubmission(sub)}>
                         View Details
