@@ -1,3 +1,10 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "welcome-image",
+      "description": "Abstract image for welcome page, showing puzzle pieces",
+      "imageUrl": "https://picsum.photos/seed/puzzle1/500/300",
+      "imageHint": "abstract puzzle"
+    }
+  ]
 }
